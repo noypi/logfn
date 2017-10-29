@@ -2,7 +2,6 @@ package logfn
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"log"
@@ -12,46 +11,6 @@ import (
 )
 
 type LogFunc func(fmt string, params ...interface{})
-
-type LogFuncType int
-
-const (
-	LogErrName LogFuncType = iota
-	LogInfoName
-)
-
-func WithErrLogger(ctx context.Context, fn LogFunc) context.Context {
-	return context.WithValue(ctx, LogErrName, fn)
-}
-
-func WithInfoLogger(ctx context.Context, fn LogFunc) context.Context {
-	return context.WithValue(ctx, LogInfoName, fn)
-}
-
-func GetErrLog(ctx context.Context) LogFunc {
-	return GetLogFunc(ctx, LogErrName)
-}
-
-func GetInfoLog(ctx context.Context) LogFunc {
-	return GetLogFunc(ctx, LogInfoName)
-}
-
-func GetLogFunc(ctx context.Context, name LogFuncType) (fn LogFunc) {
-	if nil != ctx.Value(name) {
-		fn = ctx.Value(name).(LogFunc)
-	} else {
-		fn = log.Printf
-	}
-	return
-}
-
-func LogErr(ctx context.Context, fmt string, params ...interface{}) {
-	GetErrLog(ctx)(fmt, params...)
-}
-
-func LogInfo(ctx context.Context, fmt string, params ...interface{}) {
-	GetInfoLog(ctx)(fmt, params...)
-}
 
 func StackTrace(n int) string {
 	// purposely create _stackTrace, we wanted to pass 'j'
@@ -72,7 +31,7 @@ var _logFuncAsIoWriterTest io.Writer = LogFuncW(log.Printf)
 
 func (this LogFuncW) Write(p []byte) (n int, err error) {
 	s := string(p)
-	this("%s", string(p))
+	this("%s", s)
 	n = len(s)
 	return
 }
